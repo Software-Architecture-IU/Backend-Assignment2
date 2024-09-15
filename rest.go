@@ -192,6 +192,24 @@ func getMessagesCountHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+func corsMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        // Set CORS headers
+        w.Header().Set("Access-Control-Allow-Origin", "*")
+        w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+        // Handle preflight OPTIONS request
+        if r.Method == "OPTIONS" {
+            w.WriteHeader(http.StatusOK)
+            return
+        }
+
+        // Call the next handler
+        next.ServeHTTP(w, r)
+    })
+}
+
 func main() {
 	// Setup the database
 	db := setupDB()
@@ -199,12 +217,13 @@ func main() {
 
 	// Setup the router
 	r := mux.NewRouter()
+
 	r.HandleFunc("/messages", postMessageHandler(db)).Methods("POST")
 	r.HandleFunc("/messages", getMessagesHandler(db)).Methods("GET")
 	r.HandleFunc("/messages/count", getMessagesCountHandler(db)).Methods("GET")
 
 	// Start the server
 	fmt.Println("Starting server on :8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Fatal(http.ListenAndServe(":8080", corsMiddleware(r)))
 }
 
