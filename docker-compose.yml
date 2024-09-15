@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Service
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: chatdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend_network
+
+  # Go backend service
+  backend:
+    build: .
+    container_name: go_backend
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: chatdb
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - backend_network
+
+# Volume for PostgreSQL data persistence
+volumes:
+  postgres_data:
+
+# Network for communication between services
+networks:
+  backend_network:
