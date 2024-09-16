@@ -3,7 +3,7 @@ import json
 import time
 from multiprocessing import Pool
 
-BASE_URL = 'http://your-api-url.com'
+BASE_URL = 'http://localhost:8080'
 HEADERS = {'Content-Type': 'application/json'}
 
 def post_message(text):
