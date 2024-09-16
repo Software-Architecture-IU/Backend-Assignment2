@@ -27,18 +27,11 @@ jobs:
     - name: Generate coverage report
       run: go tool cover -func=coverage.out -o coverage.txt
 
-    - uses: gwatts/go-coverage-action@v2
+    - name: Post coverage comment
       id: coverage
+      uses: marocchino/sticky-pull-request-comment@v2
       with:
-        coverage-threshold: 80
-
-        cover-pkg: ./...
-
-        ignore-pattern: |
-          \.pb\.go$
-          \_string\.go$
-        
-        # A url that the html report will be accessible at, once your
-        # workflow uploads it.  Used in the pull request comment.
-        report-url: https://artifacts.example.com/go-coverage/${{ github.ref_name}}.html
+        path: coverage.txt
+      env:
+        GITHUB_TOKEN: ${{ secrets.COVERAGE_TOKEN }}
 
