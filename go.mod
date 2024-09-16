@@ -9,7 +9,11 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/lib/pq v1.10.9
 	github.com/stretchr/testify v1.8.0
-	github.com/testcontainers/testcontainers-go v0.17.0
+	github.com/testcontainers/testcontainers-go v0.11.0
+)
+
+replace (
+	github.com/docker/docker => github.com/docker/docker v20.10.8+incompatible
 )
 
 require (
