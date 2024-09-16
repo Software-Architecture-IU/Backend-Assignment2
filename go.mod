@@ -10,7 +10,6 @@ require (
 	github.com/lib/pq v1.10.9
     	github.com/testcontainers/testcontainers-go v0.15.0
  	github.com/stretchr/testify v1.8.1
-    	github.com/docker/docker v20.10.17+incompatible
 )
 
 require (
