@@ -1,0 +1,34 @@
+name: Go CI/CD Build
+
+on:
+  pull_request:
+    branches:
+      - MVP
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.22'
+
+    - name: Install dependencies
+      run: go mod tidy
+
+    - name: Run tests and generate coverage
+      run: go test -v -coverprofile=coverage.out ./...
+
+    - name: Generate coverage report
+      run: go tool cover -func=coverage.out -o coverage.txt
+
+    - name: Post coverage comment
+      id: coverage
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        path: coverage.txt
