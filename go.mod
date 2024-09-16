@@ -8,8 +8,6 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/gorilla/mux v1.8.1
 	github.com/lib/pq v1.10.9
-	github.com/stretchr/testify v1.8.0
-	github.com/testcontainers/testcontainers-go v0.12.0
 )
 
 require (
