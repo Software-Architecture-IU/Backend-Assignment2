@@ -61,18 +61,60 @@ func TestPostMessageHandler(t *testing.T) {
 
 	handler := postMessageHandler(db)
 
-	mock.ExpectQuery(`INSERT INTO messages \(text, timestamp\) VALUES \(\$1, \$2\) RETURNING id`).
-		WithArgs("Hello, world!", sqlmock.AnyArg()).
-		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+	t.Run("Valid message", func(t *testing.T) {
+		mock.ExpectQuery(`INSERT INTO messages \(text, timestamp\) VALUES \(\$1, \$2\) RETURNING id`).
+			WithArgs("Hello, world!", sqlmock.AnyArg()).
+			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
-	recorder := httptest.NewRecorder()
-	requestBody := bytes.NewBufferString(`{"text":"Hello, world!"}`)
-	request, _ := http.NewRequest("POST", "/messages", requestBody)
+		recorder := httptest.NewRecorder()
+		requestBody := bytes.NewBufferString(`{"text":"Hello, world!"}`)
+		request, _ := http.NewRequest("POST", "/messages", requestBody)
 
-	handler.ServeHTTP(recorder, request)
+		handler.ServeHTTP(recorder, request)
 
-	assert.Equal(t, http.StatusCreated, recorder.Code)
-	assert.NoError(t, mock.ExpectationsWereMet())
+		assert.Equal(t, http.StatusCreated, recorder.Code)
+		assert.NoError(t, mock.ExpectationsWereMet())
+
+		var response map[string]string
+		err := json.NewDecoder(recorder.Body).Decode(&response)
+		assert.NoError(t, err)
+		assert.Equal(t, "Message received", response["status"])
+	})
+
+	t.Run("Invalid message - empty text", func(t *testing.T) {
+		recorder := httptest.NewRecorder()
+		requestBody := bytes.NewBufferString(`{"text":""}`)
+		request, _ := http.NewRequest("POST", "/messages", requestBody)
+
+		handler.ServeHTTP(recorder, request)
+
+		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+	})
+
+	t.Run("Invalid message - malformed JSON", func(t *testing.T) {
+		recorder := httptest.NewRecorder()
+		requestBody := bytes.NewBufferString(`{"text":}`)
+		request, _ := http.NewRequest("POST", "/messages", requestBody)
+
+		handler.ServeHTTP(recorder, request)
+
+		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+	})
+
+	t.Run("Database error", func(t *testing.T) {
+		mock.ExpectQuery(`INSERT INTO messages \(text, timestamp\) VALUES \(\$1, \$2\) RETURNING id`).
+			WithArgs("Hello, world!", sqlmock.AnyArg()).
+			WillReturnError(sql.ErrConnDone)
+
+		recorder := httptest.NewRecorder()
+		requestBody := bytes.NewBufferString(`{"text":"Hello, world!"}`)
+		request, _ := http.NewRequest("POST", "/messages", requestBody)
+
+		handler.ServeHTTP(recorder, request)
+
+		assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
 }
 
 // Test the getMessagesHandler function
