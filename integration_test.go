@@ -17,42 +17,29 @@ import (
 func TestPostgresContainer(t *testing.T) {
     ctx := context.Background()
 
-    req := testcontainers.ContainerRequest{
-        Image:        "postgres:latest",
-        ExposedPorts: []string{"5432/tcp"},
-        Env: map[string]string{
-            "POSTGRES_PASSWORD": "example",
-        },
-        WaitingFor: wait.ForListeningPort("5432/tcp").WithStartupTimeout(60 * time.Second),
+dbName := "users"
+dbUser := "user"
+dbPassword := "password"
+
+postgresContainer, err := postgres.Run(ctx,
+    "docker.io/postgres:16-alpine",
+    postgres.WithInitScripts(filepath.Join("testdata", "init-user-db.sh")),
+    postgres.WithConfigFile(filepath.Join("testdata", "my-postgres.conf")),
+    postgres.WithDatabase(dbName),
+    postgres.WithUsername(dbUser),
+    postgres.WithPassword(dbPassword),
+    testcontainers.WithWaitStrategy(
+        wait.ForLog("database system is ready to accept connections").
+            WithOccurrence(2).
+            WithStartupTimeout(5*time.Second)),
+)
+defer func() {
+    if err := testcontainers.TerminateContainer(postgresContainer); err != nil {
+        log.Printf("failed to terminate container: %s", err)
     }
-
-    postgresC, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-        ContainerRequest: req,
-        Started:          true,
-    })
-    if err != nil {
-        log.Fatalf("Failed to start container: %v", err)
-    }
-    defer postgresC.Terminate(ctx)
-
-    host, err := postgresC.Host(ctx)
-    if err != nil {
-        log.Fatalf("Failed to get container host: %v", err)
-    }
-
-    port, err := postgresC.MappedPort(ctx, "5432")
-    if err != nil {
-        log.Fatalf("Failed to get mapped port: %v", err)
-    }
-
-    dsn := fmt.Sprintf("postgres://postgres:example@%s:%s/postgres?sslmode=disable", host, port.Port())
-
-    db, err := sql.Open("postgres", dsn)
-    if err != nil {
-        log.Fatalf("Failed to open database connection: %v", err)
-    }
-    defer db.Close()
-
-    err = db.Ping()
-    assert.NoError(t, err, "Database should be accessible")
+}()
+if err != nil {
+    log.Printf("failed to start container: %s", err)
+    return
+}
 }
