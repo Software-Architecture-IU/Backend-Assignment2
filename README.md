@@ -1,3 +1,13 @@
+### Project Structure
+
+As the backend of the application is not large enough to break it down into smaller parts, it makes sense to implement all the functionality in a single file. This may seem unusual, but it really depends on the specific situation. Since the main focus of the backend part is on database connectivity and REST API controllers, it would be more convenient for developers to see the actual implementation in relation to how it is used. More specifically:
+
+* `rest.go` -- contains all the functionality
+* `Dockerfile` & `docker-composel.yml` -- it is the entrypoint of the infrastructure
+* `integration_test.go` -- test cases for the business logic
+* `tests/...` -- additional tests for the QA
+* `.github/workflows/backend.yml` -- CI for the GitHub Actions
+
 ### Abstract: Comprehensive Testing Suite for Robust Business Logic
 
 In modern software development, ensuring the reliability and correctness of database operations is paramount. Our comprehensive testing suite is designed to rigorously validate core database functionalities, ensuring robustness, accuracy, and resilience. Leveraging `sqlmock` and `testify`, it simulates real-world scenarios, providing a controlled environment to test various outcomes without the need for a live database.
