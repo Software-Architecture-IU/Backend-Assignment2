@@ -157,29 +157,43 @@ func TestGetMessagesHandler(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-// Test the getMessagesCountHandler function
 func TestGetMessagesCountHandler(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
 	defer db.Close()
 
-	mock.ExpectQuery(`SELECT COUNT\(\*\) FROM messages`).
-		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-
 	handler := getMessagesCountHandler(db)
 
-	recorder := httptest.NewRecorder()
-	request, _ := http.NewRequest("GET", "/messages/count", nil)
+	t.Run("Successful count retrieval", func(t *testing.T) {
+		mock.ExpectQuery(`SELECT COUNT\(\*\) FROM messages`).
+			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 
-	handler.ServeHTTP(recorder, request)
+		recorder := httptest.NewRecorder()
+		request, _ := http.NewRequest("GET", "/messages/count", nil)
 
-	assert.Equal(t, http.StatusCreated, recorder.Code)
+		handler.ServeHTTP(recorder, request)
 
-	var count MessagesCount
-	err = json.NewDecoder(recorder.Body).Decode(&count)
-	assert.NoError(t, err)
-	assert.Equal(t, 1, count.Count)
-	assert.NoError(t, mock.ExpectationsWereMet())
+		assert.Equal(t, http.StatusCreated, recorder.Code)
+
+		var count MessagesCount
+		err := json.NewDecoder(recorder.Body).Decode(&count)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, count.Count)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Database error", func(t *testing.T) {
+		mock.ExpectQuery(`SELECT COUNT\(\*\) FROM messages`).
+			WillReturnError(sql.ErrConnDone)
+
+		recorder := httptest.NewRecorder()
+		request, _ := http.NewRequest("GET", "/messages/count", nil)
+
+		handler.ServeHTTP(recorder, request)
+
+		assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
 }
 
 // Test the CORS middleware
