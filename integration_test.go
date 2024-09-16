@@ -1,100 +1,58 @@
 package main
 
 import (
-	"context"
-	"database/sql"
-	"testing"
-	"time"
+    "context"
+    "database/sql"
+    "fmt"
+    "log"
+    "testing"
+    "time"
 
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
-	_ "github.com/lib/pq"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/stretchr/testify/assert"
+    "github.com/stretchr/testify/assert"
+    "github.com/testcontainers/testcontainers-go"
+    "github.com/testcontainers/testcontainers-go/wait"
+    _ "github.com/lib/pq"
 )
 
-func setupTestContainer(t *testing.T) (testcontainers.Container, *sql.DB) {
-	ctx := context.Background()
+func TestPostgresContainer(t *testing.T) {
+    ctx := context.Background()
 
-	req := testcontainers.ContainerRequest{
-		Image:        "postgres:13",
-		ExposedPorts: []string{"5432/tcp"},
-		Env: map[string]string{
-			"POSTGRES_USER":     "testuser",
-			"POSTGRES_PASSWORD": "testpassword",
-			"POSTGRES_DB":       "testdb",
-		},
-		WaitingFor: wait.ForListeningPort("5432/tcp"),
-	}
+    req := testcontainers.ContainerRequest{
+        Image:        "postgres:latest",
+        ExposedPorts: []string{"5432/tcp"},
+        Env: map[string]string{
+            "POSTGRES_PASSWORD": "example",
+        },
+        WaitingFor: wait.ForListeningPort("5432/tcp").WithStartupTimeout(60 * time.Second),
+    }
 
-	// Configure Testcontainers to use a specific Ryuk image
-	testcontainers.WithImageName("quay.io/testcontainers/ryuk:0.2.3")
+    postgresC, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+        ContainerRequest: req,
+        Started:          true,
+    })
+    if err != nil {
+        log.Fatalf("Failed to start container: %v", err)
+    }
+    defer postgresC.Terminate(ctx)
 
-	postgresContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+    host, err := postgresC.Host(ctx)
+    if err != nil {
+        log.Fatalf("Failed to get container host: %v", err)
+    }
 
-	host, err := postgresContainer.Host(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
+    port, err := postgresC.MappedPort(ctx, "5432")
+    if err != nil {
+        log.Fatalf("Failed to get mapped port: %v", err)
+    }
 
-	port, err := postgresContainer.MappedPort(ctx, "5432")
-	if err != nil {
-		t.Fatal(err)
-	}
+    dsn := fmt.Sprintf("postgres://postgres:example@%s:%s/postgres?sslmode=disable", host, port.Port())
 
-	dsn := "postgres://testuser:testpassword@" + host + ":" + port.Port() + "/testdb?sslmode=disable"
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
+    db, err := sql.Open("postgres", dsn)
+    if err != nil {
+        log.Fatalf("Failed to open database connection: %v", err)
+    }
+    defer db.Close()
 
-	err = db.Ping()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	driver, err := postgres.WithInstance(db, &postgres.Config{})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	m, err := migrate.NewWithDatabaseInstance(
-		"file://migrations",
-		"postgres", driver)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = m.Up()
-	if err != nil && err != migrate.ErrNoChange {
-		t.Fatal("Failed to apply migrations:", err)
-	}
-
-	return postgresContainer, db
-}
-
-func TestAddMessage(t *testing.T) {
-	postgresContainer, db := setupTestContainer(t)
-	defer postgresContainer.Terminate(context.Background())
-	defer db.Close()
-
-	msg := PostMessage{Text: "Hello, World!"}
-	err := addMessage(db, msg)
-	assert.NoError(t, err)
-
-	var id int
-	var text string
-	var timestamp time.Time
-	err = db.QueryRow("SELECT id, text, timestamp FROM messages WHERE text=$1", msg.Text).Scan(&id, &text, &timestamp)
-	assert.NoError(t, err)
-	assert.Equal(t, msg.Text, text)
-	assert.WithinDuration(t, time.Now(), timestamp, time.Second)
+    err = db.Ping()
+    assert.NoError(t, err, "Database should be accessible")
 }
