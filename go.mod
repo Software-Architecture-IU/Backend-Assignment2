@@ -18,9 +18,6 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
-	github.com/golang-migrate/migrate/v4/database v4.18.1 // indirect
-	github.com/golang-migrate/migrate/v4/database/postgres v4.18.1 // indirect
-	github.com/golang-migrate/migrate/v4/source/file v4.18.1 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.13.0 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
