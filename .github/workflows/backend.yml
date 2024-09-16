@@ -32,3 +32,5 @@ jobs:
       uses: marocchino/sticky-pull-request-comment@v2
       with:
         path: coverage.txt
+      env:
+        GITHUB_TOKEN: ${{ secrets.COVERAGE_TOKEN }}
