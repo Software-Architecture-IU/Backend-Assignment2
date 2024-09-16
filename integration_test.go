@@ -29,6 +29,9 @@ func setupTestContainer(t *testing.T) (testcontainers.Container, *sql.DB) {
 		WaitingFor: wait.ForListeningPort("5432/tcp"),
 	}
 
+	// Configure Testcontainers to use a specific Ryuk image
+	testcontainers.WithImageName("quay.io/testcontainers/ryuk:0.2.3")
+
 	postgresContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
