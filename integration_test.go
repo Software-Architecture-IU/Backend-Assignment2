@@ -21,7 +21,7 @@ func TestAddMessage(t *testing.T) {
 
 	msg := PostMessage{Text: "Hello, world!"}
 
-	mock.ExpectQuery(`INSERT INTO messages (text, timestamp) VALUES (\$1, \$2) RETURNING id`).
+	mock.ExpectQuery(`INSERT INTO messages \(text, timestamp\) VALUES \(\$1, \$2\) RETURNING id`).
 		WithArgs(msg.Text, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
@@ -61,7 +61,7 @@ func TestPostMessageHandler(t *testing.T) {
 
 	handler := postMessageHandler(db)
 
-	mock.ExpectQuery(`INSERT INTO messages (text, timestamp) VALUES (\$1, \$2) RETURNING id`).
+	mock.ExpectQuery(`INSERT INTO messages \(text, timestamp\) VALUES \(\$1, \$2\) RETURNING id`).
 		WithArgs("Hello, world!", sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
@@ -150,4 +150,14 @@ func TestCORSMiddleware(t *testing.T) {
 	assert.Equal(t, "*", recorder.Header().Get("Access-Control-Allow-Origin"))
 	assert.Equal(t, "GET, POST, PUT, DELETE, OPTIONS", recorder.Header().Get("Access-Control-Allow-Methods"))
 	assert.Equal(t, "Content-Type, Authorization", recorder.Header().Get("Access-Control-Allow-Headers"))
+}
+
+func TestMain(m *testing.M) {
+	// Set up any necessary environment variables or configurations here
+
+	// Run the tests
+	code := m.Run()
+
+	// Exit with the appropriate code
+	os.Exit(code)
 }
