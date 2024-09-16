@@ -37,7 +37,7 @@ func TestGetMessages(t *testing.T) {
 	defer db.Close()
 
 	mockMessages := []Message{
-		{ID: 1, Text: "Hello, world!", Timestamp: time.Now()},
+		{ID: 1, Text: "Hello, world!", Timestamp: time.Now().UTC()},
 	}
 
 	rows := sqlmock.NewRows([]string{"id", "text", "timestamp"}).
@@ -82,7 +82,7 @@ func TestGetMessagesHandler(t *testing.T) {
 	defer db.Close()
 
 	mockMessages := []Message{
-		{ID: 1, Text: "Hello, world!", Timestamp: time.Now()},
+		{ID: 1, Text: "Hello, world!", Timestamp: time.Now().UTC()},
 	}
 
 	rows := sqlmock.NewRows([]string{"id", "text", "timestamp"}).
@@ -104,6 +104,12 @@ func TestGetMessagesHandler(t *testing.T) {
 	var messages []Message
 	err = json.NewDecoder(recorder.Body).Decode(&messages)
 	assert.NoError(t, err)
+
+	// Normalize the timestamps to UTC before comparison
+	for i := range messages {
+		messages[i].Timestamp = messages[i].Timestamp.UTC()
+	}
+
 	assert.Equal(t, mockMessages, messages)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
