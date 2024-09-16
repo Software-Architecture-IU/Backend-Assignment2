@@ -1,3 +1,6 @@
+![image](https://github.com/user-attachments/assets/a8d9e3a7-a8fe-4ee0-be4c-afc0c4913607)
+
+
 ### Project Structure
 
 As the backend of the application is not large enough to break it down into smaller parts, it makes sense to implement all the functionality in a single file. This may seem unusual, but it really depends on the specific situation. Since the main focus of the backend part is on database connectivity and REST API controllers, it would be more convenient for developers to see the actual implementation in relation to how it is used. More specifically:
@@ -15,7 +18,7 @@ In modern software development, ensuring the reliability and correctness of data
 #### Key Features and Benefits:
 
 1. **Full Coverage of Database Operations**:
-   - Achieves *100% coverage for business functionality, ensuring every line of code is tested and no unexpected failures occur. (*62.5% of overall code; 100% of business logic code)
+   - Achieves _100%*_ coverage for business functionality, ensuring every line of code is tested and no unexpected failures occur. (*62.5% of overall code; 100% of business logic code)
 
 2. **Simulation of Real-World Scenarios**:
    - Utilizes `sqlmock` to simulate real database interactions, including successful operations and various error conditions, allowing developers to anticipate and handle potential issues proactively.
