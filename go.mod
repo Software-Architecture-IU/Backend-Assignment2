@@ -8,9 +8,6 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/gorilla/mux v1.8.1
 	github.com/lib/pq v1.10.9
-    	github.com/testcontainers/testcontainers-go v0.15.0
- 	github.com/stretchr/testify v1.8.1
-	go.opentelemetry.io/otel v1.30.0
 )
 
 require (
