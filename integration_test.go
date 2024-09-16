@@ -31,27 +31,53 @@ func TestAddMessage(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-// Test the getMessages function
 func TestGetMessages(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
 	defer db.Close()
 
-	mockMessages := []Message{
-		{ID: 1, Text: "Hello, world!", Timestamp: time.Now().UTC()},
-	}
+	t.Run("Successful retrieval", func(t *testing.T) {
+		mockMessages := []Message{
+			{ID: 1, Text: "Hello, world!", Timestamp: time.Now().UTC()},
+		}
 
-	rows := sqlmock.NewRows([]string{"id", "text", "timestamp"}).
-		AddRow(mockMessages[0].ID, mockMessages[0].Text, mockMessages[0].Timestamp)
+		rows := sqlmock.NewRows([]string{"id", "text", "timestamp"}).
+			AddRow(mockMessages[0].ID, mockMessages[0].Text, mockMessages[0].Timestamp)
 
-	mock.ExpectQuery(`SELECT id, text, timestamp FROM messages ORDER BY timestamp ASC OFFSET \$1`).
-		WithArgs(0).
-		WillReturnRows(rows)
+		mock.ExpectQuery(`SELECT id, text, timestamp FROM messages ORDER BY timestamp ASC OFFSET \$1`).
+			WithArgs(0).
+			WillReturnRows(rows)
 
-	messages, err := getMessages(db, 0)
-	assert.NoError(t, err)
-	assert.Equal(t, mockMessages, messages)
-	assert.NoError(t, mock.ExpectationsWereMet())
+		messages, err := getMessages(db, 0)
+		assert.NoError(t, err)
+		assert.Equal(t, mockMessages, messages)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Query error", func(t *testing.T) {
+		mock.ExpectQuery(`SELECT id, text, timestamp FROM messages ORDER BY timestamp ASC OFFSET \$1`).
+			WithArgs(0).
+			WillReturnError(sql.ErrConnDone)
+
+		messages, err := getMessages(db, 0)
+		assert.Error(t, err)
+		assert.Nil(t, messages)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Scan error", func(t *testing.T) {
+		rows := sqlmock.NewRows([]string{"id", "text", "timestamp"}).
+			AddRow("invalid_id", "Hello, world!", time.Now().UTC())
+
+		mock.ExpectQuery(`SELECT id, text, timestamp FROM messages ORDER BY timestamp ASC OFFSET \$1`).
+			WithArgs(0).
+			WillReturnRows(rows)
+
+		messages, err := getMessages(db, 0)
+		assert.Error(t, err)
+		assert.Nil(t, messages)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
 }
 
 // Test the postMessageHandler function
