@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Test the addMessage function
 func TestAddMessage(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
@@ -22,13 +21,25 @@ func TestAddMessage(t *testing.T) {
 
 	msg := PostMessage{Text: "Hello, world!"}
 
-	mock.ExpectQuery(`INSERT INTO messages \(text, timestamp\) VALUES \(\$1, \$2\) RETURNING id`).
-		WithArgs(msg.Text, sqlmock.AnyArg()).
-		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+	t.Run("Successful insertion", func(t *testing.T) {
+		mock.ExpectQuery(`INSERT INTO messages \(text, timestamp\) VALUES \(\$1, \$2\) RETURNING id`).
+			WithArgs(msg.Text, sqlmock.AnyArg()).
+			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
-	err = addMessage(db, msg)
-	assert.NoError(t, err)
-	assert.NoError(t, mock.ExpectationsWereMet())
+		err = addMessage(db, msg)
+		assert.NoError(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("Insert query error", func(t *testing.T) {
+		mock.ExpectQuery(`INSERT INTO messages \(text, timestamp\) VALUES \(\$1, \$2\) RETURNING id`).
+			WithArgs(msg.Text, sqlmock.AnyArg()).
+			WillReturnError(sql.ErrConnDone)
+
+		err = addMessage(db, msg)
+		assert.Error(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
 }
 
 func TestGetMessages(t *testing.T) {
@@ -80,7 +91,6 @@ func TestGetMessages(t *testing.T) {
 	})
 }
 
-// Test the postMessageHandler function
 func TestPostMessageHandler(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
@@ -144,7 +154,6 @@ func TestPostMessageHandler(t *testing.T) {
 	})
 }
 
-// Test the getMessagesHandler function
 func TestGetMessagesHandler(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
@@ -174,7 +183,6 @@ func TestGetMessagesHandler(t *testing.T) {
 	err = json.NewDecoder(recorder.Body).Decode(&messages)
 	assert.NoError(t, err)
 
-	// Normalize the timestamps to UTC before comparison
 	for i := range messages {
 		messages[i].Timestamp = messages[i].Timestamp.UTC()
 	}
@@ -222,7 +230,6 @@ func TestGetMessagesCountHandler(t *testing.T) {
 	})
 }
 
-// Test the CORS middleware
 func TestCORSMiddleware(t *testing.T) {
 	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -242,11 +249,6 @@ func TestCORSMiddleware(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	// Set up any necessary environment variables or configurations here
-
-	// Run the tests
 	code := m.Run()
-
-	// Exit with the appropriate code
 	os.Exit(code)
 }
