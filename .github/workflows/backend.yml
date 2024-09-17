@@ -37,6 +37,8 @@ jobs:
         tail -n +2 coverage_raw.txt | awk '
         {
           coverage = substr($3, 1, length($3)-1)
+          coverage = int(coverage)
+          
           if (coverage >= 60) {
             status = "🍏"
           } else {
