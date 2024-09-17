@@ -147,12 +147,7 @@ func postMessageHandler(db *sql.DB) http.HandlerFunc {
 
 		// Respond with success
 		w.WriteHeader(http.StatusCreated)
-		err = json.NewEncoder(w).Encode(map[string]string{"status": "Message received"})
-
-		if err != nil {
-			http.Error(w, "Failed to encode message", http.StatusInternalServerError)
-			return
-		}
+		_ = json.NewEncoder(w).Encode(map[string]string{"status": "Message received"})
 	}
 }
 
@@ -176,12 +171,7 @@ func getMessagesHandler(db *sql.DB) http.HandlerFunc {
 
 		// Return the messages as JSON
 		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(msgs)
-
-		if err != nil {
-			http.Error(w, "Failed to encode message", http.StatusInternalServerError)
-			return
-		}
+		_ = json.NewEncoder(w).Encode(msgs)
 	}
 }
 
@@ -203,12 +193,7 @@ func getMessagesCountHandler(db *sql.DB) http.HandlerFunc {
 		// Return the messages as JSON
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		err = json.NewEncoder(w).Encode(result)
-
-		if err != nil {
-			http.Error(w, "Failed to encode message", http.StatusInternalServerError)
-			return
-		}
+		_ = json.NewEncoder(w).Encode(result)
 	}
 }
 
