@@ -61,6 +61,11 @@ func setupDB() *sql.DB {
 	fmt.Println("Successfully connected to the database")
 
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
     m, err := migrate.NewWithDatabaseInstance(
         "file:///migrations",
         "postgres", driver)
@@ -142,7 +147,12 @@ func postMessageHandler(db *sql.DB) http.HandlerFunc {
 
 		// Respond with success
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(map[string]string{"status": "Message received"})
+		err = json.NewEncoder(w).Encode(map[string]string{"status": "Message received"})
+
+		if err != nil {
+			http.Error(w, "Failed to encode message", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -166,7 +176,12 @@ func getMessagesHandler(db *sql.DB) http.HandlerFunc {
 
 		// Return the messages as JSON
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(msgs)
+		err = json.NewEncoder(w).Encode(msgs)
+
+		if err != nil {
+			http.Error(w, "Failed to encode message", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -188,7 +203,12 @@ func getMessagesCountHandler(db *sql.DB) http.HandlerFunc {
 		// Return the messages as JSON
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(result)
+		err = json.NewEncoder(w).Encode(result)
+
+		if err != nil {
+			http.Error(w, "Failed to encode message", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
