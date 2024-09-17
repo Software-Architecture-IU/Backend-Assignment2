@@ -60,11 +60,7 @@ func setupDB() *sql.DB {
 
 	fmt.Println("Successfully connected to the database")
 
-	driver, err := postgres.WithInstance(db, &postgres.Config{})
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	driver, _ := postgres.WithInstance(db, &postgres.Config{})
 
     m, err := migrate.NewWithDatabaseInstance(
         "file:///migrations",
