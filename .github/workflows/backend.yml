@@ -77,6 +77,6 @@ jobs:
       id: loading-test-comment
       uses: marocchino/sticky-pull-request-comment@v2
       with:
-        path: ./tests/loading_test_output.txt
+        path: tests/loading_test_output.txt
       env:
         GITHUB_TOKEN: ${{ secrets.COVERAGE_TOKEN }}
