@@ -69,7 +69,8 @@ jobs:
       run: |
         echo "# Combined Report" > combined_report.md
         cat coverage.md >> combined_report.md
-        echo "\n\n## Loading Test Output" >> combined_report.md
+        echo "" >> combined_report.md
+        echo "## Loading Test Output" >> combined_report.md
         cat loading_test_output.txt >> combined_report.md
 
     - name: Post combined report comment
