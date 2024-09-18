@@ -150,4 +150,4 @@ if __name__ == "__main__":
         f.write("| Test Case | Average Roundtrip Time (seconds) |\n")
         f.write("|-----------|-----------------------------------|\n")
         for result in test_results:
-            f.write(f"| {result['test']} | {result['avg_time']:.4f} |\n")
+            f.write(f"| {result['test']} | {result['avg_time']:.4f} ⚡|\n")
