@@ -47,14 +47,6 @@ jobs:
           printf "| %s | %s | %s |\n", $1, $3, status
         }' >> coverage.md
 
-    - name: Post coverage comment
-      id: coverage
-      uses: marocchino/sticky-pull-request-comment@v2
-      with:
-        path: coverage.md
-      env:
-        GITHUB_TOKEN: ${{ secrets.COVERAGE_TOKEN }}
-
     - name: Set up Docker Compose
       uses: hoverkraft-tech/compose-action@v2.0.1
       with:
@@ -73,10 +65,18 @@ jobs:
     - name: Run Python script
       run: python tests/QA_TimeBehaviour_Scenarios.py
 
-    - name: Post loading test output comment
-      id: loading_test_output
+    - name: Combine coverage and loading test output
+      run: |
+        echo "# Combined Report" > combined_report.md
+        echo "## Coverage Report" >> combined_report.md
+        cat coverage.md >> combined_report.md
+        echo "\n## Loading Test Output" >> combined_report.md
+        cat loading_test_output.txt >> combined_report.md
+
+    - name: Post combined report comment
+      id: combined_report
       uses: marocchino/sticky-pull-request-comment@v2
       with:
-        path: loading_test_output.txt
+        path: combined_report.md
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
