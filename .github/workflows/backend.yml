@@ -56,7 +56,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.COVERAGE_TOKEN }}
 
     - name: Set up Docker Compose
-      run: docker-compose up -d
+      uses: hoverkraft-tech/compose-action@v2.0.1
+      with:
+        compose-file: "./docker-compose.yml"
 
     - name: Set up Python
       uses: actions/setup-python@v2
