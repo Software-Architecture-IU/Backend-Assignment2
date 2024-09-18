@@ -126,11 +126,28 @@ def test_multiple_messages_multiple_users():
 
 if __name__ == "__main__":
     avg_times = []
-    
+    test_results = []
+
     avg_times.append(test_single_message_one_user())
+    test_results.append({"test": "Test #1: Single Message One User", "avg_time": avg_times[-1]})
+
     avg_times.append(test_multiple_messages_one_user())
+    test_results.append({"test": "Test #2: Multiple Messages One User", "avg_time": avg_times[-1]})
+
     avg_times.append(test_single_message_multiple_users())
+    test_results.append({"test": "Test #3: Single Message Multiple Users", "avg_time": avg_times[-1]})
+
     avg_times.append(test_multiple_messages_multiple_users())
-    
+    test_results.append({"test": "Test #4: Multiple Messages Multiple Users", "avg_time": avg_times[-1]})
+
     overall_avg_time = sum(avg_times) / len(avg_times)
     print(f"Overall Average Roundtrip Time: {overall_avg_time:.4f} seconds")
+
+    test_results.append({"test": "Overall", "avg_time": overall_avg_time})
+
+    # Create loading_test_output.txt with Markdown formatted text
+    with open("loading_test_output.txt", "w") as f:
+        f.write("| Test Case | Average Roundtrip Time (seconds) |\n")
+        f.write("|-----------|-----------------------------------|\n")
+        for result in test_results:
+            f.write(f"| {result['test']} | {result['avg_time']:.4f} ⚡|\n")
