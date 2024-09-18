@@ -147,7 +147,6 @@ if __name__ == "__main__":
 
     # Create loading_test_output.txt with Markdown formatted text
     with open("loading_test_output.txt", "w") as f:
-        f.write("# Test Results\n\n")
         f.write("| Test Case | Average Roundtrip Time (seconds) |\n")
         f.write("|-----------|-----------------------------------|\n")
         for result in test_results:
