@@ -73,10 +73,10 @@ jobs:
     - name: Run Python script
       run: python tests/QA_TimeBehaviour_Scenarios.py
 
-    - name: Post loading test comment
-      id: loading-test-comment
+    - name: Post loading test output comment
+      id: loading_test_output
       uses: marocchino/sticky-pull-request-comment@v2
       with:
-        path: tests/loading_test_output.txt
+        path: loading_test_output.txt
       env:
-        GITHUB_TOKEN: ${{ secrets.COVERAGE_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
